@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+
+def ReLU(x):
+    return x * (x > 0)
+
 def simulateActivity(connectivityMatrix, simTime):
     dt = 0.1
     N = connectivityMatrix.shape[0]
@@ -14,9 +18,19 @@ def simulateActivity(connectivityMatrix, simTime):
 
 
     for i in range(1, T):
-        dActivity = np.tanh(np.matmul(connectivityMatrix, activityMatrix[i-1, :])) - activityMatrix[i-1, :]
-        activityMatrix[i,:] = activityMatrix[i-1,:] + dt * dActivity
+        dActivity = ReLU(np.matmul(connectivityMatrix, activityMatrix[i-1, :])) - activityMatrix[i-1, :]
+        activityMatrix[i,:] = ReLU(activityMatrix[i-1,:] + dt * dActivity)
 
+        # Adding noise
+        noiseStd = np.diag(np.sqrt(activityMatrix[i,:]))
+        noiseMean = np.zeros(activityMatrix.shape[1])
+
+        activityMatrix[i,:] = \
+            activityMatrix[i,:] + np.random.multivariate_normal(np.zeros((activityMatrix.shape[1], )),
+                                                  np.diag(np.squeeze(np.sqrt(activityMatrix[i,:]))),
+                                                  (1,))
+
+        activityMatrix[i, :] = ReLU(activityMatrix[i, :])
 
     return(activityMatrix)
 
@@ -49,8 +63,11 @@ def main(neuronsNum, simTime, m, pDist):
         else:
             activationMatrices = np.concatenate((activationMatrices, activity), axis=2)
 
-    np.save('./connectivityMatrices.npy', connectivityMatrices)
-    np.save('./activationMatrices.npy', activationMatrices)
+        # Log
+        print(str(i))
+
+    np.save('./hhmi_connectome_estimation/TrainData/connectivityMatrices.npy', connectivityMatrices)
+    np.save('./hhmi_connectome_estimation/TrainData/activationMatrices.npy', activationMatrices)
 
 if __name__ == '__main__':
-    main(3, 100, 10,(0.6, 0.2, 0.2))
+    main(100,100, 10,(0.2, 0.4, 0.4))
