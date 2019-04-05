@@ -3,6 +3,11 @@ vae_ifmodel
 
 An exploration of VAE on neural activity, with the decoder as a biophysical dynamical model."
 
+TODO:
+1. Variational Inference of Posterior for TF For Model
+2. MCMC Inference of Model
+3. (Optional) VAE of model for many different W's
+
 Project Organization
 ------------
 
